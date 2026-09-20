@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "PASTE_URL_DASHBOARD_ANDA_DI_SINI"
+    }
+  ]
+}
