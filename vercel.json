@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "PASTE_URL_DASHBOARD_ANDA_DI_SINI"
+      "destination": " https://script.google.com/macros/s/AKfycbw5qw75CYYalMrEuvtG2RUm-zZd51SFRagaBxtr1-lewnurkMwIXGpnAbQTnrHiykOn/exec?page=dashboard"
     }
   ]
 }
