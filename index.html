@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#111a3d; --navy-2:#1c2a5e; --sidebar:#0e1533;
+    --blue:#3d55d6; --gold:#c8973a; --gold-light:#e6c878;
+    --paper:#f3f4f9; --card:#ffffff; --ink:#151a33; --ink-soft:#6b7290;
+    --line:#e7e9f2; --ok:#2e7d53; --ok-bg:#e7f5ee; --bad:#c0392b; --bad-bg:#fceceb;
+    --font-display:'Fraunces', Georgia, serif; --font-body:'Inter', -apple-system, Segoe UI, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font-body); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; }
+
+  /* ============ LOGIN ============ */
+  #loginScreen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #2a3a86 0%, transparent 60%),
+      radial-gradient(900px 500px at 110% 110%, #1a2456 0%, transparent 55%),
+      linear-gradient(160deg, var(--navy) 0%, var(--navy-2) 100%);
+  }
+  .login-card{ width:100%; max-width:380px; background:var(--card); border-radius:18px; padding:38px 34px 32px;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,0.45); border:1px solid rgba(200,151,58,0.15); }
+  .login-mark{ width:46px; height:46px; border-radius:10px; margin:0 auto 18px;
+    background:linear-gradient(135deg, var(--gold-light), var(--gold)); display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:700; color:var(--navy); font-size:20px; }
+  .login-card h1{ font-family:var(--font-display); font-size:23px; text-align:center; margin:0 0 4px; line-height:1.25; font-weight:700; }
+  .login-card .sub{ text-align:center; color:var(--ink-soft); font-size:13.5px; margin:0 0 28px; }
+  .field{margin-bottom:16px;}
+  .field label{ display:block; font-size:12.5px; font-weight:600; color:var(--ink-soft); margin-bottom:6px; }
+  .field input{ width:100%; padding:11px 13px; border:1.5px solid var(--line); border-radius:9px; font-size:14.5px;
+    font-family:var(--font-body); background:var(--paper); color:var(--ink); }
+  .field input:focus{ outline:none; border-color:var(--blue); }
+  .pw-wrap{ position:relative; }
+  .pw-wrap input{ padding-right:42px; }
+  .pw-toggle{ position:absolute; right:6px; top:50%; transform:translateY(-50%); width:32px; height:32px; border:none;
+    background:none; cursor:pointer; display:flex; align-items:center; justify-content:center; border-radius:6px; color:var(--ink-soft); padding:0; }
+  .pw-toggle:hover{ background:var(--line); color:var(--ink); }
+  .btn-login{ width:100%; padding:12px; border:none; border-radius:9px; margin-top:6px; background:var(--blue); color:white;
+    font-size:14.5px; font-weight:600; cursor:pointer; }
+  .btn-login:hover{ background:#2e42b8; }
+  #loginError{ color:var(--bad); font-size:13px; text-align:center; min-height:18px; margin:10px 0 0; }
+
+  /* ============ APP SHELL ============ */
+  #appScreen{ display:none; min-height:100vh; }
+  .shell{ display:flex; min-height:100vh; }
+
+  .sidebar{ width:250px; flex-shrink:0; background:var(--sidebar); color:#c7cbe6; padding:26px 20px; display:flex; flex-direction:column; }
+  .sidebar .brand h1{ font-family:var(--font-display); color:white; font-size:19px; margin:0; font-weight:700; line-height:1.35; letter-spacing:0.2px; }
+  .sidebar .brand h1 span{ color:var(--gold-light); }
+  .sidebar .brand p{ font-size:11.5px; color:#8e94b8; margin:8px 0 0; line-height:1.5; }
+  .nav{ margin-top:30px; display:flex; flex-direction:column; gap:3px; flex:1; }
+  .nav-item{ display:flex; align-items:center; gap:11px; padding:11px 13px; border-radius:9px; cursor:pointer;
+    font-size:13.5px; font-weight:500; color:#b7bcdc; }
+  .nav-item svg{ flex-shrink:0; opacity:0.85; }
+  .nav-item:hover{ background:rgba(255,255,255,0.06); color:white; }
+  .nav-item.active{ background:var(--blue); color:white; }
+  .nav-item .count{ margin-left:auto; background:var(--gold); color:var(--navy); font-size:11px; font-weight:700;
+    padding:1px 7px; border-radius:20px; }
+  .sidebar-foot{ border-top:1px solid rgba(255,255,255,0.08); padding-top:16px; margin-top:12px; }
+  .user-box{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .user-avatar{ width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, var(--gold-light), var(--gold));
+    display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--navy); font-size:13px; flex-shrink:0; }
+  .user-info .name{ font-size:13px; font-weight:600; color:white; }
+  .user-info .role{ font-size:11.5px; color:#8e94b8; }
+  .btn-logout{ width:100%; background:none; border:1px solid rgba(255,255,255,0.15); color:#c7cbe6; padding:8px;
+    border-radius:8px; font-size:12.5px; cursor:pointer; }
+  .btn-logout:hover{ background:rgba(255,255,255,0.06); color:white; }
+
+  .main{ flex:1; min-width:0; display:flex; flex-direction:column; }
+  .topbar{ background:var(--card); border-bottom:1px solid var(--line); padding:18px 30px; display:flex;
+    align-items:center; justify-content:space-between; }
+  .topbar h2{ font-family:var(--font-display); font-size:19px; margin:0; }
+  .topbar-right{ display:flex; align-items:center; gap:14px; font-size:13px; color:var(--ink-soft); }
+  .status-dot{ width:7px; height:7px; border-radius:50%; background:var(--ok); display:inline-block; margin-right:6px; }
+  .icon-btn{ background:none; border:none; color:var(--ink-soft); cursor:pointer; display:flex; padding:4px; border-radius:6px; }
+  .icon-btn:hover{ background:var(--paper); color:var(--ink); }
+
+  .content{ padding:28px 30px 60px; flex:1; }
+  .page{ display:none; }
+  .page.active{ display:block; }
+  .page-head{ margin-bottom:22px; }
+  .page-head h3{ font-family:var(--font-display); font-size:24px; margin:0 0 6px; }
+  .page-head p{ color:var(--ink-soft); font-size:14px; margin:0; }
+
+  .stat-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+  .stat{ background:var(--card); border-radius:14px; padding:20px 18px; border:1px solid var(--line); }
+  .stat .l{ font-size:13px; color:var(--ink-soft); margin-bottom:10px; }
+  .stat .n{ font-family:var(--font-display); font-size:30px; font-weight:700; line-height:1; }
+  .stat .s{ font-size:12px; color:var(--ink-soft); margin-top:8px; }
+  .stat.total .n{ color:var(--blue); }
+  .stat.aktif .n{ color:var(--ok); }
+  .stat.nonaktif .n{ color:var(--bad); }
+  .stat.update .s{ color:var(--gold); }
+
+  .panel-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .panel{ background:var(--card); border-radius:14px; border:1px solid var(--line); padding:22px 24px; }
+  .panel h4{ font-family:var(--font-display); font-size:16px; margin:0 0 18px; }
+  .bar-item{ margin-bottom:14px; }
+  .bar-item:last-child{ margin-bottom:0; }
+  .bar-item .bar-label{ display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; }
+  .bar-item .bar-label b{ font-weight:600; }
+  .bar-track{ height:7px; background:var(--paper); border-radius:6px; overflow:hidden; }
+  .bar-fill{ height:100%; background:var(--blue); border-radius:6px; }
+  .bar-fill.ok{ background:var(--ok); }
+  .bar-fill.bad{ background:var(--bad); }
+
+  .toolbar{ display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  .toolbar input{ flex:1; min-width:200px; padding:11px 14px; border:1.5px solid var(--line); border-radius:9px;
+    font-size:14px; background:var(--card); color:var(--ink); }
+  .toolbar input:focus{ outline:none; border-color:var(--blue); }
+  .btn-add{ background:var(--blue); color:white; border:none; padding:11px 18px; border-radius:9px; font-weight:600;
+    font-size:13.5px; cursor:pointer; }
+  .btn-add:hover{ background:#2e42b8; }
+
+  .table-wrap{ background:var(--card); border-radius:14px; border:1px solid var(--line); overflow:auto; }
+  table{ width:100%; border-collapse:collapse; min-width:720px; }
+  th{ text-align:left; padding:13px 16px; font-size:11.5px; text-transform:uppercase; letter-spacing:0.5px;
+    color:var(--ink-soft); border-bottom:1px solid var(--line); font-weight:600; }
+  td{ padding:13px 16px; font-size:14px; border-bottom:1px solid var(--line); }
+  tr:last-child td{ border-bottom:none; }
+  .badge{ padding:4px 11px; border-radius:20px; font-size:11.5px; font-weight:700; }
+  .badge.aktif{ background:var(--ok-bg); color:var(--ok); }
+  .badge.nonaktif{ background:var(--bad-bg); color:var(--bad); }
+  .row-actions{ display:flex; gap:6px; align-items:center; }
+  .row-actions button{ border:1px solid var(--line); background:var(--card); cursor:pointer; font-size:12.5px;
+    font-weight:600; padding:6px 10px; border-radius:7px; color:var(--ink); }
+  .row-actions .profil:hover{ border-color:var(--blue); color:var(--blue); }
+  .row-actions .icon-action{ display:flex; align-items:center; justify-content:center; padding:7px; width:30px; height:30px; }
+  .row-actions .icon-action.edit:hover{ border-color:var(--gold); color:#8a6a1f; background:#fdf7ea; }
+  .row-actions .icon-action.del:hover{ border-color:var(--bad); color:var(--bad); background:var(--bad-bg); }
+  .empty td{ text-align:center; color:var(--ink-soft); padding:36px; }
+  .pagination{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; flex-wrap:wrap; gap:10px; }
+  .pagination .info{ font-size:12.5px; color:var(--ink-soft); }
+  .pagination .pages{ display:flex; gap:6px; }
+  .pagination button{ border:1px solid var(--line); background:var(--card); cursor:pointer; font-size:12.5px;
+    font-weight:600; padding:7px 12px; border-radius:7px; color:var(--ink); }
+  .pagination button:hover:not(:disabled){ border-color:var(--blue); color:var(--blue); }
+  .pagination button:disabled{ opacity:0.4; cursor:not-allowed; }
+  .pagination button.active{ background:var(--blue); color:white; border-color:var(--blue); }
+
+  .report-cards{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px; }
+  .report-card{ background:var(--card); border-radius:14px; border:1px solid var(--line); padding:20px; }
+  .report-card .l{ font-size:13px; color:var(--ink-soft); margin-bottom:8px; }
+  .report-card .n{ font-family:var(--font-display); font-size:28px; font-weight:700; margin-bottom:14px; }
+  .btn-preview{ background:var(--paper); border:1px solid var(--line); padding:7px 14px; border-radius:8px; font-size:12.5px;
+    font-weight:600; cursor:pointer; color:var(--ink); }
+  .btn-preview:hover{ background:var(--line); }
+  .export-panel{ background:var(--card); border-radius:14px; border:1px solid var(--line); padding:24px; }
+  .export-panel h4{ font-family:var(--font-display); margin:0 0 16px; font-size:16px; }
+  .export-actions{ display:flex; gap:12px; flex-wrap:wrap; }
+  .btn-export{ display:flex; align-items:center; gap:8px; padding:12px 20px; border-radius:9px; border:none;
+    font-weight:600; font-size:13.5px; cursor:pointer; }
+  .btn-export.excel{ background:var(--navy); color:white; }
+  .btn-export.excel:hover{ background:var(--navy-2); }
+  .btn-export.pdf{ background:var(--gold); color:var(--navy); }
+  .btn-export.pdf:hover{ background:var(--gold-light); }
+  .export-note{ font-size:12.5px; color:var(--ink-soft); margin-top:12px; }
+
+  .modal{ display:none; position:fixed; inset:0; background:rgba(10,14,30,0.5); align-items:center; justify-content:center; z-index:20; padding:20px; }
+  .modal-box{ background:var(--card); border-radius:16px; width:100%; max-width:400px; padding:26px; }
+  .modal-box h3{ font-family:var(--font-display); margin:0 0 18px; font-size:19px; }
+  .modal-box label{ display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin:12px 0 5px; }
+  .modal-box input, .modal-box select{ width:100%; padding:10px 12px; border:1.5px solid var(--line); border-radius:8px;
+    font-size:14px; background:var(--paper); color:var(--ink); font-family:var(--font-body); }
+  .modal-actions{ display:flex; gap:10px; margin-top:22px; }
+  .modal-actions button{ flex:1; padding:11px; border-radius:9px; border:none; font-weight:600; font-size:13.5px; cursor:pointer; }
+  .modal-actions .cancel{ background:var(--line); color:var(--ink); }
+  .modal-actions .save{ background:var(--blue); color:white; }
+
+  .loading-overlay{ position:fixed; inset:0; background:rgba(255,255,255,0.7); display:none; align-items:center; justify-content:center;
+    z-index:50; font-size:13.5px; color:var(--ink-soft); font-weight:600; }
+
+  #printArea{ display:none; }
+  @media print{
+    body *{ visibility:hidden; }
+    #printArea, #printArea *{ visibility:visible; }
+    #printArea{ display:block; position:absolute; top:0; left:0; width:100%; padding:20px; }
+    #printArea h2{ font-family:'Fraunces', serif; margin:0 0 4px; }
+    #printArea p{ color:#555; font-size:13px; margin:0 0 16px; }
+    #printArea table{ width:100%; border-collapse:collapse; }
+    #printArea th, #printArea td{ border:1px solid #ccc; padding:8px 10px; font-size:12px; text-align:left; }
+    #printArea th{ background:#f0f0f0; }
+  }
+
+  @media (max-width:860px){
+    .sidebar{ display:none; }
+    .stat-row, .report-cards{ grid-template-columns:repeat(2,1fr); }
+    .panel-row{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loadingOverlay" class="loading-overlay">Memuat data...</div>
+<div id="printArea"></div>
+
+<!-- ============ LOGIN ============ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-mark">V</div>
+    <h1>E-Member<br>Viking Sulawesi Utara</h1>
+    <p class="sub">Masuk untuk mengelola data anggota</p>
+    <div class="field">
+      <label for="username">Username</label>
+      <input type="text" id="username" placeholder="Masukkan username" autocomplete="username">
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="password" placeholder="Masukkan password" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+        <button type="button" class="pw-toggle" onclick="togglePassword()" aria-label="Lihat password">
+          <svg id="eyeOpen" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg id="eyeClosed" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
+      </div>
+    </div>
+    <button class="btn-login" onclick="doLogin()">Masuk</button>
+    <p id="loginError"></p>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="appScreen">
+  <div class="shell">
+    <div class="sidebar">
+      <div class="brand">
+        <h1>E-MEMBER<br><span>VIKING SULUT</span></h1>
+        <p>Sistem Informasi Manajemen Anggota Viking Sulawesi Utara</p>
+      </div>
+      <div class="nav">
+        <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          Dashboard
+        </div>
+        <div class="nav-item" data-page="anggota" onclick="showPage('anggota')">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Data Anggota
+          <span class="count" id="navCount">0</span>
+        </div>
+        <div class="nav-item" data-page="iuran" onclick="showPage('iuran')">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2Z"/><circle cx="16" cy="14" r="1.2"/></svg>
+          Iuran Anggota
+        </div>
+        <div class="nav-item" data-page="laporan" onclick="showPage('laporan')">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Laporan
+        </div>
+      </div>
+      <div class="sidebar-foot">
+        <div class="user-box">
+          <div class="user-avatar" id="userAvatar">-</div>
+          <div class="user-info">
+            <div class="name" id="userName">-</div>
+            <div class="role" id="userRole">-</div>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="logout()">Keluar</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="topbar">
+        <h2 id="topbarTitle">Dashboard</h2>
+        <div class="topbar-right">
+          <button class="icon-btn" onclick="refreshAll()" title="Muat ulang data">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </button>
+          <span><span class="status-dot"></span><span id="topbarRole">-</span></span>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <!-- DASHBOARD -->
+        <div class="page active" id="page-dashboard">
+          <div class="page-head">
+            <h3>Dashboard Anggota</h3>
+            <p>Ringkasan kondisi data anggota Viking Sulawesi Utara.</p>
+          </div>
+          <div class="stat-row">
+            <div class="stat total"><div class="l">Total Anggota</div><div class="n" id="statTotal">0</div><div class="s">Basis data terintegrasi</div></div>
+            <div class="stat aktif"><div class="l">Aktif</div><div class="n" id="statAktif">0</div><div class="s" id="statAktifPct">0% dari total</div></div>
+            <div class="stat nonaktif"><div class="l">Nonaktif</div><div class="n" id="statNonaktif">0</div><div class="s">Perlu ditinjau</div></div>
+            <div class="stat update"><div class="l">Wilayah Terdaftar</div><div class="n" id="statWilayah">0</div><div class="s">Cabang/wilayah aktif</div></div>
+          </div>
+          <div class="panel-row">
+            <div class="panel"><h4>Anggota berdasarkan wilayah</h4><div id="chartWilayah"></div></div>
+            <div class="panel"><h4>Status keanggotaan</h4><div id="chartStatus"></div></div>
+          </div>
+        </div>
+
+        <!-- DATA ANGGOTA -->
+        <div class="page" id="page-anggota">
+          <div class="page-head">
+            <h3>Data Anggota</h3>
+            <p>Database anggota, dapat dimutakhirkan kapan saja tanpa mengganti QR kartu.</p>
+          </div>
+          <div class="toolbar">
+            <input type="text" id="searchInput" placeholder="Cari nama, nomor anggota, atau wilayah..." oninput="currentPage=1; renderTable()">
+            <button class="btn-add" onclick="openModal()">+ Tambah Anggota</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>No. Anggota</th><th>Nama</th><th>Wilayah</th><th>TTL</th><th>Status</th><th>Aksi</th></tr></thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+            <div class="pagination" id="tablePagination"></div>
+          </div>
+        </div>
+
+        <!-- IURAN ANGGOTA -->
+        <div class="page" id="page-iuran">
+          <div class="page-head">
+            <h3>Iuran Anggota</h3>
+            <p>Kelola nominal iuran bulanan dan status pembayaran tiap anggota.</p>
+          </div>
+          <div class="panel" style="margin-bottom:22px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;">
+            <div>
+              <div style="font-size:12.5px; color:var(--ink-soft); margin-bottom:4px;">Nominal Iuran per Bulan</div>
+              <div id="nominalDisplay" style="font-family:var(--font-display); font-size:26px; font-weight:700; color:var(--blue);">Rp 0</div>
+            </div>
+            <button class="btn-add" onclick="editNominal()">Ubah Nominal</button>
+          </div>
+          <div class="stat-row" style="grid-template-columns:repeat(4,1fr);">
+            <div class="stat total"><div class="l">Total Terkumpul Bulan Ini</div><div class="n" id="iuranTerkumpul">Rp 0</div><div class="s" id="iuranBulanLabel">—</div></div>
+            <div class="stat update"><div class="l">Total Keseluruhan</div><div class="n" id="iuranGrandTotal">Rp 0</div><div class="s">Akumulasi semua waktu</div></div>
+            <div class="stat aktif"><div class="l">Sudah Bayar</div><div class="n" id="iuranSudahBayar">0</div><div class="s">Anggota bulan ini</div></div>
+            <div class="stat nonaktif"><div class="l">Belum Bayar</div><div class="n" id="iuranBelumBayar">0</div><div class="s">Perlu ditagih</div></div>
+          </div>
+          <div class="toolbar">
+            <input type="text" id="iuranSearchInput" placeholder="Cari nama, nomor anggota, atau wilayah..." oninput="currentIuranPage=1; renderIuran()">
+          </div>
+          <p id="iuranActionError" style="color:var(--bad); font-size:12.5px; margin:-8px 0 12px; min-height:16px;"></p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>No. Anggota</th><th>Nama</th><th>Wilayah</th><th>Status Bulan Ini</th><th>Total Iuran Terkumpul</th><th>Aksi</th></tr></thead>
+              <tbody id="iuranTableBody"></tbody>
+            </table>
+            <div class="pagination" id="iuranPagination"></div>
+          </div>
+          <div class="export-panel" style="margin-top:18px;">
+            <h4>Export Laporan Iuran</h4>
+            <div class="export-actions">
+              <button class="btn-export excel" onclick="exportIuranCSV()">⬇ Export Excel (CSV)</button>
+              <button class="btn-export pdf" onclick="printIuranReport()">🖨 Export PDF (Cetak)</button>
+            </div>
+            <p class="export-note">Export PDF membuka dialog cetak browser — pilih "Save as PDF" sebagai tujuan cetak. Seluruh anggota (sesuai pencarian) ikut tercetak, tidak hanya halaman yang sedang aktif.</p>
+          </div>
+        </div>
+
+        <!-- LAPORAN -->
+        <div class="page" id="page-laporan">
+          <div class="page-head">
+            <h3>Laporan</h3>
+            <p>Ringkasan data untuk kebutuhan pengurus dan pelaporan.</p>
+          </div>
+          <div class="report-cards">
+            <div class="report-card"><div class="l">Daftar Anggota</div><div class="n" id="repTotal">0</div><button class="btn-preview" onclick="showPage('anggota')">Preview</button></div>
+            <div class="report-card"><div class="l">Anggota Aktif</div><div class="n" id="repAktif">0</div><button class="btn-preview" onclick="previewFilter('Aktif')">Preview</button></div>
+            <div class="report-card"><div class="l">Anggota Nonaktif</div><div class="n" id="repNonaktif">0</div><button class="btn-preview" onclick="previewFilter('Nonaktif')">Preview</button></div>
+            <div class="report-card"><div class="l">Wilayah Terdaftar</div><div class="n" id="repWilayah">0</div><button class="btn-preview" onclick="showPage('dashboard')">Preview</button></div>
+          </div>
+          <div class="export-panel">
+            <h4>Export Data</h4>
+            <div class="export-actions">
+              <button class="btn-export excel" onclick="exportCSV()">⬇ Export Excel (CSV)</button>
+              <button class="btn-export pdf" onclick="printAnggotaReport()">🖨 Export PDF (Cetak)</button>
+            </div>
+            <p class="export-note">Export PDF membuka dialog cetak browser — pilih "Save as PDF" sebagai tujuan cetak. Seluruh anggota ikut tercetak.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal tambah/ubah anggota -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h3 id="modalTitle">Tambah Anggota</h3>
+    <input type="hidden" id="m_row">
+    <label>No. Anggota</label>
+    <input type="text" id="m_no" placeholder="contoh: 2025.01.001">
+    <label>Nama</label>
+    <input type="text" id="m_nama" placeholder="Nama lengkap">
+    <label>Wilayah</label>
+    <input type="text" id="m_wilayah" placeholder="contoh: Manado">
+    <label>TTL (Tempat, Tanggal Lahir)</label>
+    <input type="text" id="m_ttl" placeholder="contoh: Manado, 01-01-1990">
+    <label>Alamat</label>
+    <input type="text" id="m_alamat" placeholder="Alamat lengkap">
+    <label>Status</label>
+    <select id="m_status">
+      <option value="Aktif">Aktif</option>
+      <option value="Nonaktif">Nonaktif</option>
+    </select>
+    <p id="modalError" style="color:var(--bad); font-size:12.5px; min-height:16px; margin:10px 0 0;"></p>
+    <div class="modal-actions">
+      <button class="cancel" onclick="closeModal()">Batal</button>
+      <button class="save" onclick="saveMember()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal ringkasan profil -->
+<div class="modal" id="profileModal">
+  <div class="modal-box" style="max-width:380px;">
+    <h3 style="margin-bottom:4px;">Ringkasan Anggota</h3>
+    <p style="color:var(--ink-soft); font-size:12.5px; margin:0 0 18px;">Data lengkap sesuai kartu tanda anggota</p>
+    <div id="profileBody" style="display:flex; flex-direction:column; gap:12px;"></div>
+    <div class="modal-actions"><button class="cancel" onclick="closeProfile()">Tutup</button></div>
+  </div>
+</div>
+
+<!-- Modal ubah nominal -->
+<div class="modal" id="nominalModal">
+  <div class="modal-box" style="max-width:340px;">
+    <h3>Ubah Nominal Iuran</h3>
+    <label>Nominal iuran per bulan (Rp)</label>
+    <input type="number" id="m_nominal" placeholder="contoh: 20000" min="0">
+    <p id="nominalError" style="color:var(--bad); font-size:12.5px; min-height:16px; margin:10px 0 0;"></p>
+    <div class="modal-actions">
+      <button class="cancel" onclick="closeNominalModal()">Batal</button>
+      <button class="save" onclick="saveNominal()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal riwayat pembayaran -->
+<div class="modal" id="riwayatModal">
+  <div class="modal-box" style="max-width:420px;">
+    <h3 id="riwayatTitle" style="margin-bottom:4px;">Riwayat Pembayaran</h3>
+    <p style="color:var(--ink-soft); font-size:12.5px; margin:0 0 16px;">Catatan iuran per bulan yang sudah dibayarkan</p>
+    <div id="riwayatBody" style="display:flex; flex-direction:column; gap:8px; max-height:260px; overflow:auto;"></div>
+    <div style="margin-top:18px; padding-top:16px; border-top:1px solid var(--line);">
+      <label style="display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin-bottom:6px;">Bayar iuran bulan yang terlewat</label>
+      <div style="display:flex; gap:8px;">
+        <input type="month" id="riwayatBulanInput" style="flex:1; padding:9px 10px; border:1.5px solid var(--line); border-radius:8px; font-size:13.5px; background:var(--paper); color:var(--ink); font-family:var(--font-body);">
+        <button class="btn-add" onclick="tambahPembayaranBulan()" style="padding:9px 14px; font-size:13px;">+ Catat</button>
+      </div>
+      <p id="riwayatError" style="color:var(--bad); font-size:12.5px; min-height:16px; margin:8px 0 0;"></p>
+    </div>
+    <div class="modal-actions"><button class="cancel" onclick="closeRiwayat()">Tutup</button></div>
+  </div>
+</div>
+
+<!-- Modal konfirmasi umum -->
+<div class="modal" id="confirmModal">
+  <div class="modal-box" style="max-width:340px;">
+    <h3 id="confirmTitle">Konfirmasi</h3>
+    <p id="confirmMessage" style="color:var(--ink-soft); font-size:14px; margin:0 0 4px;"></p>
+    <div class="modal-actions">
+      <button class="cancel" onclick="closeConfirm()">Batal</button>
+      <button class="save" id="confirmActionBtn" style="background:var(--bad);">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5qw75CYYalMrEuvtG2RUm-zZd51SFRagaBxtr1-lewnurkMwIXGpnAbQTnrHiykOn/exec";
+
+  function apiGet(action, params){
+    params = params || {};
+    var qs = Object.keys(params).map(function(k){ return encodeURIComponent(k)+'='+encodeURIComponent(params[k]); }).join('&');
+    var url = SCRIPT_URL + '?action=' + encodeURIComponent(action) + (qs ? '&'+qs : '');
+    return fetch(url).then(function(res){ return res.json(); });
+  }
+
+  var members = [];
+  var iuranData = [];
+  var iuranNominal = 0;
+  var currentUser = null;
+  var currentRiwayatMemberId = null;
+
+  function showLoading(v){ document.getElementById('loadingOverlay').style.display = v ? 'flex' : 'none'; }
+
+  var bulanNama = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  function currentMonthKey(){
+    var d = new Date();
+    var m = d.getMonth() + 1;
+    return d.getFullYear() + '-' + (m < 10 ? '0' + m : m);
+  }
+  function labelBulan(key){
+    var parts = key.split('-');
+    return bulanNama[parseInt(parts[1],10)-1] + ' ' + parts[0];
+  }
+  function formatRupiah(n){ return 'Rp ' + Number(n || 0).toLocaleString('id-ID'); }
+
+  function togglePassword(){
+    var input = document.getElementById('password');
+    var isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    document.getElementById('eyeOpen').style.display = isHidden ? 'none' : 'block';
+    document.getElementById('eyeClosed').style.display = isHidden ? 'block' : 'none';
+  }
+
+  function doLogin(){
+    var u = document.getElementById('username').value.trim();
+    var p = document.getElementById('password').value;
+    if(!u || !p){ document.getElementById('loginError').innerText = 'Username dan password wajib diisi.'; return; }
+    document.getElementById('loginError').innerText = '';
+    showLoading(true);
+    apiGet('checkLogin', { username: u, password: p })
+      .then(function(res){
+        showLoading(false);
+        if(res && res.success){
+          currentUser = { nama: res.nama, role: res.role };
+          document.getElementById('userName').innerText = res.nama;
+          document.getElementById('userRole').innerText = res.role;
+          document.getElementById('userAvatar').innerText = String(res.nama).trim().charAt(0).toUpperCase();
+          document.getElementById('topbarRole').innerText = res.role;
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('appScreen').style.display = 'block';
+          loadNominal();
+          refreshAll();
+        } else {
+          document.getElementById('loginError').innerText = 'Username atau password salah.';
+        }
+      })
+      .catch(function(err){
+        showLoading(false);
+        document.getElementById('loginError').innerText = 'Gagal terhubung ke server: ' + err.message;
+      });
+  }
+
+  function logout(){
+    document.getElementById('appScreen').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+    document.getElementById('loginError').innerText = '';
+    currentUser = null;
+  }
+
+  var pageTitles = { dashboard:'Dashboard', anggota:'Data Anggota', iuran:'Iuran Anggota', laporan:'Laporan' };
+  function showPage(page){
+    document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+    document.getElementById('page-' + page).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.toggle('active', n.dataset.page === page); });
+    document.getElementById('topbarTitle').innerText = pageTitles[page];
+  }
+  function previewFilter(status){
+    showPage('anggota');
+    document.getElementById('searchInput').value = '';
+    renderTable(status);
+  }
+
+  function refreshAll(){
+    showLoading(true);
+    apiGet('getAllMembers')
+      .then(function(data){
+        showLoading(false);
+        members = data;
+        document.getElementById('navCount').innerText = members.length;
+        updateStats();
+        renderCharts();
+        renderTable();
+        loadIuranData();
+      })
+      .catch(function(err){
+        showLoading(false);
+        alert('Gagal memuat data anggota: ' + err.message);
+      });
+  }
+
+  function loadNominal(){
+    apiGet('getNominal').then(function(val){
+      iuranNominal = val;
+      document.getElementById('nominalDisplay').innerText = formatRupiah(iuranNominal);
+    });
+  }
+
+  function loadIuranData(callback){
+    apiGet('getIuranData').then(function(data){
+      iuranData = data;
+      renderIuran();
+      if(callback) callback();
+    });
+  }
+
+  function updateStats(){
+    var total = members.length;
+    var aktif = members.filter(function(m){ return m.Status === 'Aktif'; }).length;
+    var wilayahSet = {};
+    members.forEach(function(m){ wilayahSet[m.Wilayah] = true; });
+
+    document.getElementById('statTotal').innerText = total;
+    document.getElementById('statAktif').innerText = aktif;
+    document.getElementById('statAktifPct').innerText = (total ? Math.round(aktif/total*100) : 0) + '% dari total';
+    document.getElementById('statNonaktif').innerText = total - aktif;
+    document.getElementById('statWilayah').innerText = Object.keys(wilayahSet).length;
+
+    document.getElementById('repTotal').innerText = total;
+    document.getElementById('repAktif').innerText = aktif;
+    document.getElementById('repNonaktif').innerText = total - aktif;
+    document.getElementById('repWilayah').innerText = Object.keys(wilayahSet).length;
+  }
+
+  function renderCharts(){
+    var total = members.length || 1;
+    var byWilayah = {};
+    members.forEach(function(m){ byWilayah[m.Wilayah] = (byWilayah[m.Wilayah] || 0) + 1; });
+    var wilayahHtml = Object.keys(byWilayah).sort(function(a,b){ return byWilayah[b]-byWilayah[a]; }).map(function(w){
+      var count = byWilayah[w];
+      var pct = Math.round(count/total*100);
+      return '<div class="bar-item"><div class="bar-label"><span>'+w+'</span><b>'+count+'</b></div>' +
+             '<div class="bar-track"><div class="bar-fill" style="width:'+pct+'%"></div></div></div>';
+    }).join('');
+    document.getElementById('chartWilayah').innerHTML = wilayahHtml || '<p style="color:var(--ink-soft); font-size:13px;">Belum ada data</p>';
+
+    var aktif = members.filter(function(m){ return m.Status==='Aktif'; }).length;
+    var nonaktif = total - aktif;
+    document.getElementById('chartStatus').innerHTML =
+      '<div class="bar-item"><div class="bar-label"><span>Aktif</span><b>'+aktif+'</b></div>' +
+      '<div class="bar-track"><div class="bar-fill ok" style="width:'+Math.round(aktif/total*100)+'%"></div></div></div>' +
+      '<div class="bar-item"><div class="bar-label"><span>Nonaktif</span><b>'+nonaktif+'</b></div>' +
+      '<div class="bar-track"><div class="bar-fill bad" style="width:'+Math.round(nonaktif/total*100)+'%"></div></div></div>';
+  }
+
+  var currentPage = 1;
+  var PAGE_SIZE = 10;
+
+  function renderTable(filterStatus){
+    var kw = document.getElementById('searchInput').value.toLowerCase();
+    var filtered = members.filter(function(m){
+      var matchKw = String(m.Nama).toLowerCase().indexOf(kw) !== -1 || String(m.No_Anggota).toLowerCase().indexOf(kw) !== -1 || String(m.Wilayah).toLowerCase().indexOf(kw) !== -1;
+      var matchStatus = !filterStatus || m.Status === filterStatus;
+      return matchKw && matchStatus;
+    });
+
+    var totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    if(currentPage > totalPages) currentPage = totalPages;
+    if(currentPage < 1) currentPage = 1;
+
+    var startIdx = (currentPage - 1) * PAGE_SIZE;
+    var pageItems = filtered.slice(startIdx, startIdx + PAGE_SIZE);
+
+    var body = document.getElementById('tableBody');
+    if(pageItems.length === 0){
+      body.innerHTML = '<tr class="empty"><td colspan="6">Tidak ada data anggota</td></tr>';
+    } else {
+      body.innerHTML = pageItems.map(function(m){
+        var badgeClass = m.Status === 'Aktif' ? 'aktif' : 'nonaktif';
+        return '<tr>' +
+          '<td>'+m.No_Anggota+'</td><td>'+m.Nama+'</td><td>'+m.Wilayah+'</td><td>'+m.TTL+'</td>' +
+          '<td><span class="badge '+badgeClass+'">'+m.Status+'</span></td>' +
+          '<td class="row-actions">' +
+            '<button class="profil" onclick="viewProfile('+m._row+')">Profil</button>' +
+            '<button class="icon-action edit" onclick="editMember('+m._row+')" title="Ubah"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>' +
+            '<button class="icon-action del" onclick="deleteMember('+m._row+')" title="Hapus"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>' +
+          '</td></tr>';
+      }).join('');
+    }
+
+    renderPagination(filtered.length, totalPages);
+  }
+
+  function renderPagination(totalItems, totalPages){
+    var wrap = document.getElementById('tablePagination');
+    if(totalItems === 0){ wrap.innerHTML = ''; return; }
+
+    var startItem = (currentPage - 1) * PAGE_SIZE + 1;
+    var endItem = Math.min(currentPage * PAGE_SIZE, totalItems);
+
+    var pagesHtml = '';
+    for(var p = 1; p <= totalPages; p++){
+      pagesHtml += '<button class="'+(p === currentPage ? 'active' : '')+'" onclick="goToPage('+p+')">'+p+'</button>';
+    }
+
+    wrap.innerHTML =
+      '<div class="info">Menampilkan '+startItem+'\u2013'+endItem+' dari '+totalItems+' anggota</div>' +
+      '<div class="pages">' +
+        '<button onclick="goToPage(currentPage-1)" '+(currentPage<=1?'disabled':'')+'>&laquo; Sebelumnya</button>' +
+        pagesHtml +
+        '<button onclick="goToPage(currentPage+1)" '+(currentPage>=totalPages?'disabled':'')+'>Berikutnya &raquo;</button>' +
+      '</div>';
+  }
+
+  function goToPage(p){
+    currentPage = p;
+    renderTable();
+  }
+
+  function openModal(){
+    document.getElementById('modalTitle').innerText = 'Tambah Anggota';
+    ['m_row','m_no','m_nama','m_wilayah','m_ttl','m_alamat'].forEach(function(id){ document.getElementById(id).value=''; });
+    document.getElementById('m_status').value = 'Aktif';
+    document.getElementById('modalError').innerText = '';
+    document.getElementById('modal').style.display = 'flex';
+  }
+  function editMember(row){
+    var m = members.find(function(x){ return x._row === row; });
+    document.getElementById('modalTitle').innerText = 'Ubah Anggota';
+    document.getElementById('m_row').value = row;
+    document.getElementById('m_no').value = m.No_Anggota;
+    document.getElementById('m_nama').value = m.Nama;
+    document.getElementById('m_wilayah').value = m.Wilayah;
+    document.getElementById('m_ttl').value = m.TTL;
+    document.getElementById('m_alamat').value = m.Alamat;
+    document.getElementById('m_status').value = m.Status;
+    document.getElementById('modalError').innerText = '';
+    document.getElementById('modal').style.display = 'flex';
+  }
+  function closeModal(){ document.getElementById('modal').style.display = 'none'; }
+
+  function saveMember(){
+    var no = document.getElementById('m_no').value.trim();
+    var nama = document.getElementById('m_nama').value.trim();
+    if(!no || !nama){
+      document.getElementById('modalError').innerText = 'No. Anggota dan Nama wajib diisi.';
+      return;
+    }
+    var row = document.getElementById('m_row').value;
+    var data = {
+      No_Anggota: no, Nama: nama,
+      Wilayah: document.getElementById('m_wilayah').value.trim() || '-',
+      TTL: document.getElementById('m_ttl').value.trim(),
+      Alamat: document.getElementById('m_alamat').value.trim(),
+      Status: document.getElementById('m_status').value
+    };
+    showLoading(true);
+    var action = row ? 'updateMember' : 'addMember';
+    var params = row ? { row: row, data: JSON.stringify(data) } : { data: JSON.stringify(data) };
+    apiGet(action, params)
+      .then(function(){ closeModal(); refreshAll(); })
+      .catch(function(err){
+        showLoading(false);
+        document.getElementById('modalError').innerText = 'Gagal menyimpan: ' + err.message;
+      });
+  }
+
+  function deleteMember(row){
+    var m = members.find(function(x){ return x._row === row; });
+    showConfirm('Yakin ingin menghapus anggota "' + m.Nama + '"? Riwayat iuran anggota ini juga akan terhapus.', function(){
+      showLoading(true);
+      apiGet('deleteMember', { row: row })
+        .then(function(){ refreshAll(); })
+        .catch(function(err){ showLoading(false); alert('Gagal menghapus: ' + err.message); });
+    });
+  }
+
+  function viewProfile(row){
+    var m = members.find(function(x){ return x._row === row; });
+    var badgeClass = m.Status === 'Aktif' ? 'aktif' : 'nonaktif';
+    var rows = [['No. Anggota', m.No_Anggota], ['Nama', m.Nama], ['Wilayah', m.Wilayah], ['TTL', m.TTL], ['Alamat', m.Alamat]];
+    var html = rows.map(function(r){
+      return '<div><div style="font-size:11.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:3px;">'+r[0]+'</div>' +
+             '<div style="font-size:14.5px; font-weight:600;">'+r[1]+'</div></div>';
+    }).join('');
+    html += '<div><div style="font-size:11.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:5px;">Status</div>' +
+            '<span class="badge '+badgeClass+'">'+m.Status+'</span></div>';
+    document.getElementById('profileBody').innerHTML = html;
+    document.getElementById('profileModal').style.display = 'flex';
+  }
+  function closeProfile(){ document.getElementById('profileModal').style.display = 'none'; }
+
+  var confirmCallback = null;
+  function showConfirm(message, onConfirm){
+    document.getElementById('confirmMessage').innerText = message;
+    confirmCallback = onConfirm;
+    document.getElementById('confirmModal').style.display = 'flex';
+  }
+  function closeConfirm(){ document.getElementById('confirmModal').style.display = 'none'; confirmCallback = null; }
+  document.getElementById('confirmActionBtn').addEventListener('click', function(){
+    if(confirmCallback) confirmCallback();
+    closeConfirm();
+  });
+
+  var currentIuranPage = 1;
+  var IURAN_PAGE_SIZE = 10;
+
+  function renderIuran(){
+    document.getElementById('iuranBulanLabel').innerText = 'Bulan ' + labelBulan(currentMonthKey());
+    var sudahBayar = iuranData.filter(function(m){ return m.bayarBulanIni; });
+    var belumBayar = iuranData.length - sudahBayar.length;
+
+    // Total terkumpul dihitung dari TANGGAL pembayaran dicatat (bukan periode bulan yang dibayar),
+    // supaya pembayaran bulan terlewat yang dicatat hari ini tetap terhitung sebagai uang masuk bulan ini.
+    var thisMonth = currentMonthKey();
+    var terkumpul = 0;
+    iuranData.forEach(function(m){
+      m.riwayat.forEach(function(r){
+        if(String(r.tanggal).slice(0,7) === thisMonth){
+          terkumpul += r.jumlah;
+        }
+      });
+    });
+
+    document.getElementById('iuranTerkumpul').innerText = formatRupiah(terkumpul);
+    document.getElementById('iuranGrandTotal').innerText = formatRupiah(iuranData.reduce(function(sum, m){ return sum + m.totalIuran; }, 0));
+    document.getElementById('iuranSudahBayar').innerText = sudahBayar.length;
+    document.getElementById('iuranBelumBayar').innerText = belumBayar;
+
+    var kw = document.getElementById('iuranSearchInput').value.toLowerCase();
+    var filtered = iuranData.filter(function(m){
+      return String(m.Nama).toLowerCase().indexOf(kw) !== -1 || String(m.No_Anggota).toLowerCase().indexOf(kw) !== -1 || String(m.Wilayah).toLowerCase().indexOf(kw) !== -1;
+    });
+
+    var totalPages = Math.max(1, Math.ceil(filtered.length / IURAN_PAGE_SIZE));
+    if(currentIuranPage > totalPages) currentIuranPage = totalPages;
+    if(currentIuranPage < 1) currentIuranPage = 1;
+    var startIdx = (currentIuranPage - 1) * IURAN_PAGE_SIZE;
+    var pageItems = filtered.slice(startIdx, startIdx + IURAN_PAGE_SIZE);
+
+    var body = document.getElementById('iuranTableBody');
+    if(pageItems.length === 0){
+      body.innerHTML = '<tr class="empty"><td colspan="6">Tidak ada data anggota</td></tr>';
+    } else {
+      body.innerHTML = pageItems.map(function(m){
+        var badgeClass = m.bayarBulanIni ? 'aktif' : 'nonaktif';
+        var badgeText = m.bayarBulanIni ? 'Lunas' : 'Belum Bayar';
+        var btnText = m.bayarBulanIni ? 'Batalkan' : 'Tandai Lunas';
+        return '<tr>' +
+          '<td>'+m.No_Anggota+'</td><td>'+m.Nama+'</td><td>'+m.Wilayah+'</td>' +
+          '<td><span class="badge '+badgeClass+'">'+badgeText+'</span></td>' +
+          '<td>'+formatRupiah(m.totalIuran)+'</td>' +
+          '<td class="row-actions">' +
+            '<button class="btn-preview" onclick="toggleBayar(&quot;'+m.No_Anggota+'&quot;)">'+btnText+'</button>' +
+            '<button class="btn-preview" onclick="viewRiwayat(&quot;'+m.No_Anggota+'&quot;)">Riwayat</button>' +
+          '</td></tr>';
+      }).join('');
+    }
+
+    renderIuranPagination(filtered.length, totalPages);
+  }
+
+  function renderIuranPagination(totalItems, totalPages){
+    var wrap = document.getElementById('iuranPagination');
+    if(totalItems === 0){ wrap.innerHTML = ''; return; }
+
+    var startItem = (currentIuranPage - 1) * IURAN_PAGE_SIZE + 1;
+    var endItem = Math.min(currentIuranPage * IURAN_PAGE_SIZE, totalItems);
+
+    var pagesHtml = '';
+    for(var p = 1; p <= totalPages; p++){
+      pagesHtml += '<button class="'+(p === currentIuranPage ? 'active' : '')+'" onclick="goToIuranPage('+p+')">'+p+'</button>';
+    }
+
+    wrap.innerHTML =
+      '<div class="info">Menampilkan '+startItem+'\u2013'+endItem+' dari '+totalItems+' anggota</div>' +
+      '<div class="pages">' +
+        '<button onclick="goToIuranPage(currentIuranPage-1)" '+(currentIuranPage<=1?'disabled':'')+'>&laquo; Sebelumnya</button>' +
+        pagesHtml +
+        '<button onclick="goToIuranPage(currentIuranPage+1)" '+(currentIuranPage>=totalPages?'disabled':'')+'>Berikutnya &raquo;</button>' +
+      '</div>';
+  }
+
+  function goToIuranPage(p){
+    currentIuranPage = p;
+    renderIuran();
+  }
+
+  function toggleBayar(no){
+    document.getElementById('iuranActionError').innerText = '';
+    var m = iuranData.find(function(x){ return x.No_Anggota === no; });
+    showLoading(true);
+    var action = m.bayarBulanIni ? 'removePayment' : 'addPayment';
+    var payload = m.bayarBulanIni
+      ? { noAnggota: no, bulan: currentMonthKey() }
+      : { noAnggota: no, bulan: currentMonthKey(), jumlah: iuranNominal };
+    apiGet(action, payload)
+      .then(function(res){
+        showLoading(false);
+        if(res.success){ loadIuranData(); } else { document.getElementById('iuranActionError').innerText = res.message; }
+      })
+      .catch(function(err){ showLoading(false); document.getElementById('iuranActionError').innerText = err.message; });
+  }
+
+  function viewRiwayat(no){
+    currentRiwayatMemberId = no;
+    var m = iuranData.find(function(x){ return x.No_Anggota === no; });
+    document.getElementById('riwayatTitle').innerText = 'Riwayat Pembayaran — ' + m.Nama;
+    renderRiwayatList(m);
+    var input = document.getElementById('riwayatBulanInput');
+    input.value = '';
+    input.max = currentMonthKey();
+    document.getElementById('riwayatError').innerText = '';
+    document.getElementById('riwayatModal').style.display = 'flex';
+  }
+  function renderRiwayatList(m){
+    var sorted = m.riwayat.slice().sort(function(a,b){ return b.bulan.localeCompare(a.bulan); });
+    if(sorted.length === 0){
+      document.getElementById('riwayatBody').innerHTML = '<p style="color:var(--ink-soft); font-size:13.5px; text-align:center; padding:20px 0;">Belum ada riwayat pembayaran</p>';
+    } else {
+      document.getElementById('riwayatBody').innerHTML = sorted.map(function(r){
+        return '<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--paper); border-radius:9px;">' +
+          '<div><div style="font-weight:600; font-size:13.5px;">'+labelBulan(r.bulan)+'</div>' +
+          '<div style="font-size:11.5px; color:var(--ink-soft);">Dibayar '+r.tanggal+'</div></div>' +
+          '<div style="font-weight:700; color:var(--ok);">'+formatRupiah(r.jumlah)+'</div>' +
+        '</div>';
+      }).join('');
+    }
+  }
+  function tambahPembayaranBulan(){
+    var bulan = document.getElementById('riwayatBulanInput').value;
+    if(!bulan){ document.getElementById('riwayatError').innerText = 'Pilih bulan yang mau dibayar terlebih dahulu.'; return; }
+    showLoading(true);
+    apiGet('addPayment', { noAnggota: currentRiwayatMemberId, bulan: bulan, jumlah: iuranNominal })
+      .then(function(res){
+        showLoading(false);
+        if(res.success){
+          document.getElementById('riwayatError').innerText = '';
+          document.getElementById('riwayatBulanInput').value = '';
+          loadIuranData(function(){
+            var m = iuranData.find(function(x){ return x.No_Anggota === currentRiwayatMemberId; });
+            renderRiwayatList(m);
+          });
+        } else {
+          document.getElementById('riwayatError').innerText = res.message;
+        }
+      })
+      .catch(function(err){ showLoading(false); document.getElementById('riwayatError').innerText = err.message; });
+  }
+  function closeRiwayat(){ document.getElementById('riwayatModal').style.display = 'none'; }
+
+  function editNominal(){
+    document.getElementById('m_nominal').value = iuranNominal;
+    document.getElementById('nominalError').innerText = '';
+    document.getElementById('nominalModal').style.display = 'flex';
+  }
+  function closeNominalModal(){ document.getElementById('nominalModal').style.display = 'none'; }
+
+  function saveNominal(){
+    var num = parseInt(document.getElementById('m_nominal').value, 10);
+    if(isNaN(num) || num <= 0){
+      document.getElementById('nominalError').innerText = 'Nominal tidak valid. Masukkan angka lebih dari 0.';
+      return;
+    }
+    showLoading(true);
+    apiGet('setNominal', { value: num })
+      .then(function(res){
+        showLoading(false);
+        if(res.success){ iuranNominal = num; closeNominalModal(); renderIuran(); }
+        else { document.getElementById('nominalError').innerText = res.message || 'Gagal menyimpan nominal.'; }
+      })
+      .catch(function(err){ showLoading(false); document.getElementById('nominalError').innerText = err.message; });
+  }
+
+  function printIuranReport(){
+    var kw = document.getElementById('iuranSearchInput').value.toLowerCase();
+    var filtered = iuranData.filter(function(m){
+      return String(m.Nama).toLowerCase().indexOf(kw) !== -1 || String(m.No_Anggota).toLowerCase().indexOf(kw) !== -1 || String(m.Wilayah).toLowerCase().indexOf(kw) !== -1;
+    });
+    var rowsHtml = filtered.map(function(m){
+      var status = m.bayarBulanIni ? 'Lunas' : 'Belum Bayar';
+      return '<tr><td>'+m.No_Anggota+'</td><td>'+m.Nama+'</td><td>'+m.Wilayah+'</td><td>'+status+'</td><td>'+formatRupiah(m.totalIuran)+'</td></tr>';
+    }).join('');
+
+    document.getElementById('printArea').innerHTML =
+      '<h2>Laporan Iuran Anggota — E-Member Viking Sulut</h2>' +
+      '<p>Dicetak: ' + new Date().toLocaleDateString('id-ID') + ' &nbsp;|&nbsp; Bulan berjalan: ' + labelBulan(currentMonthKey()) + ' &nbsp;|&nbsp; Total anggota: ' + filtered.length + '</p>' +
+      '<table><thead><tr><th>No. Anggota</th><th>Nama</th><th>Wilayah</th><th>Status Bulan Ini</th><th>Total Iuran Terkumpul</th></tr></thead>' +
+      '<tbody>' + (rowsHtml || '<tr><td colspan="5">Tidak ada data</td></tr>') + '</tbody></table>';
+
+    window.print();
+  }
+
+  function printAnggotaReport(){
+    var rowsHtml = members.map(function(m){
+      return '<tr><td>'+m.No_Anggota+'</td><td>'+m.Nama+'</td><td>'+m.Wilayah+'</td><td>'+m.TTL+'</td><td>'+m.Alamat+'</td><td>'+m.Status+'</td></tr>';
+    }).join('');
+
+    document.getElementById('printArea').innerHTML =
+      '<h2>Data Anggota — E-Member Viking Sulut</h2>' +
+      '<p>Dicetak: ' + new Date().toLocaleDateString('id-ID') + ' &nbsp;|&nbsp; Total anggota: ' + members.length + '</p>' +
+      '<table><thead><tr><th>No. Anggota</th><th>Nama</th><th>Wilayah</th><th>TTL</th><th>Alamat</th><th>Status</th></tr></thead>' +
+      '<tbody>' + (rowsHtml || '<tr><td colspan="6">Tidak ada data</td></tr>') + '</tbody></table>';
+
+    window.print();
+  }
+
+  function exportCSV(){
+    var rows = [['No. Anggota','Nama','Wilayah','TTL','Alamat','Status']];
+    members.forEach(function(m){ rows.push([m.No_Anggota, m.Nama, m.Wilayah, m.TTL, m.Alamat, m.Status]); });
+    downloadCSV(rows, 'data-anggota-viking-sulut.csv');
+  }
+  function exportIuranCSV(){
+    var rows = [['No. Anggota','Nama','Wilayah','Status Bulan Ini','Total Iuran Terkumpul (Rp)','Jumlah Bulan Tercatat']];
+    iuranData.forEach(function(m){
+      rows.push([m.No_Anggota, m.Nama, m.Wilayah, m.bayarBulanIni ? 'Lunas' : 'Belum Bayar', m.totalIuran, m.riwayat.length]);
+    });
+    downloadCSV(rows, 'laporan-iuran-viking-sulut.csv');
+  }
+  function downloadCSV(rows, filename){
+    var csv = rows.map(function(r){ return r.map(function(v){ return '"' + String(v).replace(/"/g,'""') + '"'; }).join(','); }).join('\n');
+    var blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+  }
+</script>
+</body>
+</html>
